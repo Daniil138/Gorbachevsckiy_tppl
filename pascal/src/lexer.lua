@@ -6,11 +6,7 @@ local lexer = {}
 
 local token_type = require("src.token")
 
---Для проверки ключевых слов, чтобы можно было в проверке написать keywords["BEGIN"] -> true
-local keywords = {
-    BEGIN = true,
-    END = true
-}
+
 
 function lexer.set_text(text)
     if text == nil or type(text) ~= "string" or #text == 0 then
@@ -97,11 +93,9 @@ function lexer.next_token()
                 else
                     return token(token_type.IDENTIFIER, new_token)
                 end
-            else
-                error("Unexpected token at line " .. lexer.line .. " (expected " .. new_token ..")")
             end
 
-        elseif lexer.current_char == ':' then
+    elseif lexer.current_char == ':' then
             forward()  
             if lexer.current_char == '=' then
                 forward() 

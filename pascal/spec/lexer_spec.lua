@@ -89,6 +89,7 @@ describe("Pascal Lexer", function()
         expect_token(tokens[1], token_type.IDENTIFIER, "MyVar") 
     end)
 
+
     it("should recognize keywords case-insensitively", function()
         local tokens = tokenize("begin END")
         assert(#tokens == 2)

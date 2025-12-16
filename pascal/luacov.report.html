@@ -321,10 +321,10 @@
             Code coverage report
             <span class="stats">
                <span class="cov">
-                  <span class="bg" style="width: 98.86%"></span>
-                  <span><strong>98.86%</strong> Coverage</span>
+                  <span class="bg" style="width: 99.45%"></span>
+                  <span><strong>99.45%</strong> Coverage</span>
                </span>
-               <span class="hits"><strong>87</strong> Hits</span>
+               <span class="hits"><strong>181</strong> Hits</span>
                <span class="miss"><strong>1</strong> Missed</span>
             </span>
          </h1>
@@ -335,57 +335,55 @@
             src/lexer.lua
             <span class="stats">
                <span class="cov">
-                  <span class="bg" style="width: 98.67%"></span>
-                  <span><strong>98.67%</strong> Coverage</span>
+                  <span class="bg" style="width: 100.00%"></span>
+                  <span><strong>100.00%</strong> Coverage</span>
                </span>
-               <span class="hits"><strong>74</strong> Hits</span>
-               <span class="miss"><strong>1</strong> Missed</span>
+               <span class="hits"><strong>71</strong> Hits</span>
+               <span class="miss"><strong>0</strong> Missed</span>
             </span>
          </h2>
          <pre class="prettyprint lang-lua linenums">-- lexer.lua
 -- Токенизатор который разобьет исходный текст на токены с определенным типом 
 
-<span class="fc" data-hits="3">local lexer = {}</span>
-<span class="fc" data-hits="3">local token_type = require(&quot;src.token&quot;)</span>
+<span class="fc" data-hits="12">local lexer = {}</span>
 
---Для проверки ключевых слов, чтобы можно было в проверке написать keywords[&quot;BEGIN&quot;] -&gt; true
-<span class="fc" data-hits="3">local keywords = {</span>
-<span class="fc" data-hits="3">    BEGIN = true,</span>
-<span class="fc" data-hits="3">    END = true</span>
-}
 
-<span class="fc" data-hits="3">function lexer.set_text(text)</span>
-<span class="fc" data-hits="48">    if text == nil or type(text) ~= &quot;string&quot; or #text == 0 then</span>
-<span class="fc" data-hits="9">        error(&quot;lexer.set_text(): expected a string&quot;)</span>
+<span class="fc" data-hits="12">local token_type = require(&quot;src.token&quot;)</span>
+
+
+
+<span class="fc" data-hits="12">function lexer.set_text(text)</span>
+<span class="fc" data-hits="159">    if text == nil or type(text) ~= &quot;string&quot; or #text == 0 then</span>
+<span class="fc" data-hits="15">        error(&quot;lexer.set_text(): expected a string&quot;)</span>
     end
-<span class="fc" data-hits="39">    lexer.pos = 1</span>
-<span class="fc" data-hits="39">    lexer.line = 1</span>
-<span class="fc" data-hits="39">    lexer.code = text</span>
-<span class="fc" data-hits="39">    lexer.current_char = lexer.code:sub(lexer.pos,lexer.pos)</span>
+<span class="fc" data-hits="144">    lexer.pos = 1</span>
+<span class="fc" data-hits="174">    lexer.line = 1</span>
+<span class="fc" data-hits="145">    lexer.code = text</span>
+<span class="fc" data-hits="142">    lexer.current_char = lexer.code:sub(lexer.pos,lexer.pos)</span>
 end
 
-<span class="fc" data-hits="3">function lexer.next_token()</span>
+<span class="fc" data-hits="39">function lexer.next_token()</span>
 
 
 
     --функция которая двигается на след символ  и проверяет переход на след строку
     local function forward()        
-<span class="fc" data-hits="288">        lexer.pos = lexer.pos + 1</span>
-<span class="fc" data-hits="288">        if lexer.current_char == &quot;\n&quot; then</span>
-<span class="fc" data-hits="9">                lexer.line = lexer.line +1</span>
+<span class="fc" data-hits="2120">        lexer.pos = lexer.pos + 1</span>
+<span class="fc" data-hits="2120">        if lexer.current_char == &quot;\n&quot; then</span>
+<span class="fc" data-hits="15">                lexer.line = lexer.line +1</span>
         end
 
-<span class="fc" data-hits="288">        if lexer.pos &gt; #lexer.code then</span>
-<span class="fc" data-hits="33">            lexer.current_char =&#39;\0&#39;</span>
+<span class="fc" data-hits="2514">        if lexer.pos &gt; #lexer.code then</span>
+<span class="fc" data-hits="128">            lexer.current_char =&#39;\0&#39;</span>
         else
-<span class="fc" data-hits="255">            lexer.current_char = lexer.code:sub(lexer.pos,lexer.pos)</span>
+<span class="fc" data-hits="1995">            lexer.current_char = lexer.code:sub(lexer.pos,lexer.pos)</span>
         end
     end
 
     -- Функция пропуска всего ненужного 
     local function skip()
-<span class="fc" data-hits="129">        while lexer.current_char ~= &#39;\0&#39; and (lexer.current_char  == &#39; &#39; or lexer.current_char == &#39;\t&#39; or lexer.current_char == &#39;\n&#39; or lexer.current_char == &#39;\r&#39;) do</span>
-<span class="fc" data-hits="72">            forward()</span>
+<span class="fc" data-hits="1632">        while lexer.current_char ~= &#39;\0&#39; and (lexer.current_char  == &#39; &#39; or lexer.current_char == &#39;\t&#39; or lexer.current_char == &#39;\n&#39; or lexer.current_char == &#39;\r&#39;) do</span>
+<span class="fc" data-hits="550">            forward()</span>
         end
     end
 
@@ -393,97 +391,281 @@ end
 
     -- Получаем любой токен кроме знаков и скобок 
     local function get_token()
-<span class="fc" data-hits="60">        local start = lexer.pos</span>
-<span class="fc" data-hits="60">        forward()</span>
-<span class="fc" data-hits="168">        while lexer.current_char:match(&#39;[a-zA-Z0-9_]&#39;) do </span>
-<span class="fc" data-hits="108">            forward()</span>
+<span class="fc" data-hits="463">        local start = lexer.pos</span>
+<span class="fc" data-hits="463">        forward()</span>
+<span class="fc" data-hits="1179">        while lexer.current_char:match(&#39;[a-zA-Z0-9_]&#39;) do </span>
+<span class="fc" data-hits="716">            forward()</span>
         end
-<span class="fc" data-hits="60">        return lexer.code:sub(start,lexer.pos-1)        </span>
+<span class="fc" data-hits="549">        return lexer.code:sub(start,lexer.pos-1)        </span>
     end
 
     --Добавление токена 
     local function token(type,value)
-<span class="fc" data-hits="129">        return {</span>
-<span class="fc" data-hits="129">            token = value,</span>
-<span class="fc" data-hits="129">            type = type,</span>
-<span class="fc" data-hits="129">            line = lexer.line</span>
-<span class="fc" data-hits="129">        }</span>
+<span class="fc" data-hits="1040">        return {</span>
+<span class="fc" data-hits="877">            token = value,</span>
+<span class="fc" data-hits="877">            type = type,</span>
+<span class="fc" data-hits="877">            line = lexer.line</span>
+<span class="fc" data-hits="1037">        }</span>
     end
 
-<span class="fc" data-hits="135">    if lexer.current_char  == &#39; &#39; or lexer.current_char == &#39;\t&#39; or lexer.current_char == &#39;\n&#39; or lexer.current_char == &#39;\r&#39; then</span>
-<span class="fc" data-hits="57">        skip()</span>
-    end
-
-
-<span class="fc" data-hits="135">    if lexer.current_char == &#39;\0&#39; then</span>
-<span class="fc" data-hits="30">        return token(token_type.EOF, &quot;&lt;eof&gt;&quot;)</span>
+<span class="fc" data-hits="1047">    if lexer.current_char  == &#39; &#39; or lexer.current_char == &#39;\t&#39; or lexer.current_char == &#39;\n&#39; or lexer.current_char == &#39;\r&#39; then</span>
+<span class="fc" data-hits="685">        skip()</span>
     end
 
 
+<span class="fc" data-hits="982">    if lexer.current_char == &#39;\0&#39; then</span>
+<span class="fc" data-hits="115">        return token(token_type.EOF, &quot;&lt;eof&gt;&quot;)</span>
+    end
 
-<span class="fc" data-hits="105">    if lexer.current_char:match(&#39;[a-zA-Z0-9_]&#39;) then </span>
 
-<span class="fc" data-hits="60">        local new_token = get_token()</span>
 
-<span class="fc" data-hits="60">            if new_token:match(&quot;^[0-9]+$&quot;) then</span>
-<span class="fc" data-hits="15">                return token(token_type.NUMBER , tonumber(new_token))</span>
+<span class="fc" data-hits="772">    if lexer.current_char:match(&#39;[a-zA-Z0-9_]&#39;) then </span>
 
-<span class="fc" data-hits="45">            elseif new_token:match(&quot;^[a-zA-Z_][a-zA-Z0-9_]*$&quot;) then</span>
+<span class="fc" data-hits="463">        local new_token = get_token()</span>
 
-<span class="fc" data-hits="45">                local upper = new_token:upper()</span>
+<span class="fc" data-hits="605">            if new_token:match(&quot;^[0-9]+$&quot;) then</span>
+<span class="fc" data-hits="132">                return token(token_type.NUMBER , tonumber(new_token))</span>
 
-<span class="fc" data-hits="45">                if upper == &quot;BEGIN&quot; then</span>
-<span class="fc" data-hits="9">                    return token(token_type.BEGIN, new_token)</span>
-<span class="fc" data-hits="36">                elseif upper == &quot;END&quot; then</span>
-<span class="fc" data-hits="9">                    return token(token_type.END,upper)</span>
+<span class="fc" data-hits="331">            elseif new_token:match(&quot;^[a-zA-Z_][a-zA-Z0-9_]*$&quot;) then</span>
+
+<span class="fc" data-hits="354">                local upper = new_token:upper()</span>
+
+<span class="fc" data-hits="394">                if upper == &quot;BEGIN&quot; then</span>
+<span class="fc" data-hits="99">                    return token(token_type.BEGIN, new_token)</span>
+<span class="fc" data-hits="295">                elseif upper == &quot;END&quot; then</span>
+<span class="fc" data-hits="90">                    return token(token_type.END,upper)</span>
                 else
-<span class="fc" data-hits="27">                    return token(token_type.IDENTIFIER, new_token)</span>
+<span class="fc" data-hits="162">                    return token(token_type.IDENTIFIER, new_token)</span>
                 end
-            else
-<span class="nc">                error(&quot;Unexpected token at line &quot; .. lexer.line .. &quot; (expected &quot; .. new_token ..&quot;)&quot;)</span>
             end
 
-<span class="fc" data-hits="45">        elseif lexer.current_char == &#39;:&#39; then</span>
-<span class="fc" data-hits="9">            forward()  </span>
-<span class="fc" data-hits="9">            if lexer.current_char == &#39;=&#39; then</span>
-<span class="fc" data-hits="6">                forward() </span>
-<span class="fc" data-hits="6">                return token(token_type.ASSIGN, &#39;:=&#39;)</span>
+<span class="fc" data-hits="91">    elseif lexer.current_char == &#39;:&#39; then</span>
+<span class="fc" data-hits="19">            forward()  </span>
+<span class="fc" data-hits="265">            if lexer.current_char == &#39;=&#39; then</span>
+<span class="fc" data-hits="91">                forward() </span>
+<span class="fc" data-hits="91">                return token(token_type.ASSIGN, &#39;:=&#39;)</span>
             else
-<span class="fc" data-hits="3">                error(&quot;Unexpected &#39;:&#39; at line &quot; .. lexer.line .. &quot; (expected &#39;:=&#39;)&quot;)</span>
+<span class="fc" data-hits="126">                error(&quot;Unexpected &#39;:&#39; at line &quot; .. lexer.line .. &quot; (expected &#39;:=&#39;)&quot;)</span>
         end
 
-<span class="fc" data-hits="36">        elseif lexer.current_char == &#39;.&#39; then</span>
-<span class="fc" data-hits="9">            local char = lexer.current_char</span>
-<span class="fc" data-hits="9">            forward()</span>
-<span class="fc" data-hits="9">            return token(token_type.DOT, char)</span>
+<span class="fc" data-hits="60">        elseif lexer.current_char == &#39;.&#39; then</span>
+<span class="fc" data-hits="32">            local char = lexer.current_char</span>
+<span class="fc" data-hits="189">            forward()</span>
+<span class="fc" data-hits="81">            return token(token_type.DOT, char)</span>
 
-<span class="fc" data-hits="27">        elseif lexer.current_char == &#39;;&#39; then</span>
-<span class="fc" data-hits="6">            local char = lexer.current_char</span>
-<span class="fc" data-hits="6">            forward()</span>
-<span class="fc" data-hits="6">            return token(token_type.SEMICOLON, char)</span>
+<span class="fc" data-hits="92">        elseif lexer.current_char == &#39;;&#39; then</span>
+<span class="fc" data-hits="45">            local char = lexer.current_char</span>
+<span class="fc" data-hits="129">            forward()</span>
+<span class="fc" data-hits="44">            return token(token_type.SEMICOLON, char)</span>
 
-<span class="fc" data-hits="21">        elseif lexer.current_char == &#39;+&#39; or lexer.current_char == &#39;-&#39; or lexer.current_char == &#39;*&#39; or lexer.current_char == &#39;&#47;&#39; then</span>
-<span class="fc" data-hits="12">            local op = lexer.current_char</span>
-<span class="fc" data-hits="12">            forward()</span>
-<span class="fc" data-hits="12">            return token(token_type.OPERATOR, op)</span>
+<span class="fc" data-hits="46">        elseif lexer.current_char == &#39;+&#39; or lexer.current_char == &#39;-&#39; or lexer.current_char == &#39;*&#39; or lexer.current_char == &#39;&#47;&#39; then</span>
+<span class="fc" data-hits="42">            local op = lexer.current_char</span>
+<span class="fc" data-hits="108">            forward()</span>
+<span class="fc" data-hits="88">            return token(token_type.OPERATOR, op)</span>
 
-<span class="fc" data-hits="9">        elseif lexer.current_char == &#39;(&#39; then</span>
-<span class="fc" data-hits="3">            local char = lexer.current_char</span>
-<span class="fc" data-hits="3">            forward()</span>
-<span class="fc" data-hits="3">            return token(token_type.LPAREN, char)</span>
+<span class="fc" data-hits="70">        elseif lexer.current_char == &#39;(&#39; then</span>
+<span class="fc" data-hits="21">            local char = lexer.current_char</span>
+<span class="fc" data-hits="36">            forward()</span>
+<span class="fc" data-hits="24">            return token(token_type.LPAREN, char)</span>
 
-<span class="fc" data-hits="6">        elseif lexer.current_char == &#39;)&#39; then</span>
-<span class="fc" data-hits="3">            local char = lexer.current_char</span>
-<span class="fc" data-hits="3">            forward()</span>
-<span class="fc" data-hits="3">            return token(token_type.RPAREN, char)</span>
+<span class="fc" data-hits="11">        elseif lexer.current_char == &#39;)&#39; then</span>
+<span class="fc" data-hits="7">            local char = lexer.current_char</span>
+<span class="fc" data-hits="16">            forward()</span>
+<span class="fc" data-hits="12">            return token(token_type.RPAREN, char)</span>
 
         else
-<span class="fc" data-hits="3">            error(&quot;Unexpected character &#39;&quot; .. lexer.current_char .. &quot;&#39; at line &quot; .. lexer.line)</span>
+<span class="fc" data-hits="4">            error(&quot;Unexpected character &#39;&quot; .. lexer.current_char .. &quot;&#39; at line &quot; .. lexer.line)</span>
         end
 
 end
 
-<span class="fc" data-hits="3">return lexer</span>
+<span class="fc" data-hits="10">return lexer</span>
+</pre>
+      </div>
+
+      <div class="hidden file success-high" id="src-parser">
+         <h2 class="title">
+            src/parser.lua
+            <span class="stats">
+               <span class="cov">
+                  <span class="bg" style="width: 98.98%"></span>
+                  <span><strong>98.98%</strong> Coverage</span>
+               </span>
+               <span class="hits"><strong>97</strong> Hits</span>
+               <span class="miss"><strong>1</strong> Missed</span>
+            </span>
+         </h2>
+         <pre class="prettyprint lang-lua linenums">
+-- src&#47;parser.lua
+<span class="fc" data-hits="4">local token_type = require(&quot;src.token&quot;)</span>
+<span class="fc" data-hits="4">local lexer = require(&quot;src.lexer&quot;)</span>
+
+
+
+-- AST узлы 
+<span class="fc" data-hits="98">local function NumberNode(value) return { tag = &quot;number&quot;, value = value } end</span>
+<span class="fc" data-hits="52">local function BinOpNode(left, op, right) return { tag = &quot;binop&quot;, left = left, op = op, right = right } end</span>
+<span class="fc" data-hits="82">local function VariableNode(name) return { tag = &quot;variable&quot;, name = name } end</span>
+<span class="fc" data-hits="64">local function AssignmentNode(var, expr) return { tag = &quot;assign&quot;, var = var, expr = expr } end</span>
+<span class="fc" data-hits="64">local function CompoundNode(statements) return { tag = &quot;compound&quot;, statements = statements } end</span>
+<span class="fc" data-hits="16">local function EmptyNode() return { tag = &quot;empty&quot; } end</span>
+<span class="fc" data-hits="52">local function ProgramNode(stmt) return { tag = &quot;program&quot;, programm = stmt } end</span>
+
+
+
+
+-- === Parser ===
+<span class="fc" data-hits="4">local parser = {}</span>
+
+
+<span class="fc" data-hits="4">function parser.parse()</span>
+<span class="fc" data-hits="62">    if not parser.lexer then</span>
+<span class="nc">        error(&quot;parser.parse(): lexer not set. Call parser.set_lexer() first.&quot;)</span>
+    end
+<span class="fc" data-hits="62">    return parser.program()</span>
+end
+
+
+
+<span class="fc" data-hits="4">function  parser.set_lexer(lex)</span>
+<span class="fc" data-hits="62">    if type(lex) == &quot;table&quot; and type(lex.next_token) == &quot;function&quot; then</span>
+<span class="fc" data-hits="62">        parser.lexer = lex</span>
+<span class="fc" data-hits="62">        parser.current_token = parser.lexer.next_token()</span>
+    end
+end
+
+
+
+<span class="fc" data-hits="4">function parser.check_token_type(tk_type)</span>
+<span class="fc" data-hits="482">    if tk_type == parser.current_token.type then</span>
+<span class="fc" data-hits="470">        parser.current_token = parser.lexer.next_token()</span>
+    else
+<span class="fc" data-hits="12">        return error(&quot;Invalid syntax at line &quot; .. parser.current_token.line .. &quot; token: &quot; .. parser.current_token.token)</span>
+    end
+end
+
+
+<span class="fc" data-hits="4">function parser.term()</span>
+<span class="fc" data-hits="90">    local node = parser.factor()</span>
+
+<span class="fc" data-hits="106">    while parser.current_token.type == token_type.OPERATOR and</span>
+<span class="fc" data-hits="42">          (parser.current_token.token == &#39;*&#39; or parser.current_token.token == &#39;&#47;&#39;) do</span>
+<span class="fc" data-hits="18">        local op = parser.current_token</span>
+<span class="fc" data-hits="18">        parser.check_token_type(token_type.OPERATOR)</span>
+<span class="fc" data-hits="18">        local right = parser.factor()</span>
+<span class="fc" data-hits="16">        node = BinOpNode(node, op, right)</span>
+    end
+
+<span class="fc" data-hits="88">    return node</span>
+end
+
+
+<span class="fc" data-hits="4">function parser.expr()</span>
+<span class="fc" data-hits="66">    local node = parser.term()</span>
+<span class="fc" data-hits="88">    while parser.current_token.type == token_type.OPERATOR and</span>
+<span class="fc" data-hits="24">          (parser.current_token.token == &#39;+&#39; or parser.current_token.token == &#39;-&#39;) do</span>
+<span class="fc" data-hits="24">            local op = parser.current_token</span>
+<span class="fc" data-hits="24">            parser.check_token_type(token_type.OPERATOR)</span>
+<span class="fc" data-hits="24">            local right = parser.term()</span>
+<span class="fc" data-hits="24">            node = BinOpNode(node, op, right)</span>
+    end 
+<span class="fc" data-hits="64">    return node </span>
+end
+
+<span class="fc" data-hits="4">function parser.factor()</span>
+<span class="fc" data-hits="116">    local token = parser.current_token</span>
+
+<span class="fc" data-hits="116">    if token.type == token_type.NUMBER then</span>
+<span class="fc" data-hits="86">        parser.check_token_type(token_type.NUMBER)</span>
+<span class="fc" data-hits="86">        return NumberNode(token)</span>
+<span class="fc" data-hits="30">    elseif token.type == token_type.LPAREN then</span>
+<span class="fc" data-hits="4">        parser.check_token_type(token_type.LPAREN)</span>
+<span class="fc" data-hits="4">        local res = parser.expr()</span>
+<span class="fc" data-hits="4">        parser.check_token_type(token_type.RPAREN)</span>
+<span class="fc" data-hits="4">        return res</span>
+<span class="fc" data-hits="26">    elseif token.type == token_type.IDENTIFIER then</span>
+<span class="fc" data-hits="16">        parser.check_token_type(token_type.IDENTIFIER)</span>
+<span class="fc" data-hits="16">        return VariableNode(token)</span>
+<span class="fc" data-hits="10">    elseif  token.type == token_type.OPERATOR then</span>
+<span class="fc" data-hits="8">        if token.token == &quot;+&quot; then</span>
+<span class="fc" data-hits="4">            local op = token</span>
+<span class="fc" data-hits="4">            parser.check_token_type(token_type.OPERATOR)</span>
+<span class="fc" data-hits="4">            local f = parser.factor()</span>
+<span class="fc" data-hits="4">            return BinOpNode(NumberNode({token = 0, type = token_type.NUMBER}),op,f)</span>
+<span class="fc" data-hits="4">        elseif token.token == &quot;-&quot; then</span>
+<span class="fc" data-hits="4">            local op = token</span>
+<span class="fc" data-hits="4">            parser.check_token_type(token_type.OPERATOR)</span>
+<span class="fc" data-hits="4">            local f = parser.factor()</span>
+<span class="fc" data-hits="4">            return BinOpNode(NumberNode({token = 0, type = token_type.NUMBER}),op,f)</span>
+        end
+
+    end
+<span class="fc" data-hits="2">    return error(&quot;Invalid factor at line &quot; .. parser.current_token.line .. &quot; token: &quot; .. parser.current_token.token)</span>
+    
+end
+
+
+
+
+<span class="fc" data-hits="3">function parser.assigment()</span>
+<span class="fc" data-hits="47">    local var_name = parser.current_token</span>
+<span class="fc" data-hits="48">    local var_node = VariableNode(var_name)</span>
+<span class="fc" data-hits="62">    parser.check_token_type(token_type.IDENTIFIER)</span>
+<span class="fc" data-hits="62">    parser.check_token_type(token_type.ASSIGN)</span>
+<span class="fc" data-hits="62">    local var_expr = parser.expr()</span>
+<span class="fc" data-hits="60">    return AssignmentNode(var_node, var_expr)</span>
+end
+
+
+
+<span class="fc" data-hits="3">function parser.empty()</span>
+<span class="fc" data-hits="9">    return EmptyNode()</span>
+end
+
+
+
+
+<span class="fc" data-hits="3">function parser.statement()</span>
+<span class="fc" data-hits="59">    if parser.current_token.type == token_type.BEGIN then</span>
+<span class="fc" data-hits="4">        return parser.complex_statement()</span>
+<span class="fc" data-hits="75">    elseif parser.current_token.type == token_type.IDENTIFIER then </span>
+<span class="fc" data-hits="48">        return parser.assigment()</span>
+    else 
+<span class="fc" data-hits="24">        return parser.empty()</span>
+    end
+    
+end
+
+<span class="fc" data-hits="4">function parser.statement_list()</span>
+<span class="fc" data-hits="50">    local statements = { parser.statement()}</span>
+<span class="fc" data-hits="58">    while parser.current_token.type == token_type.SEMICOLON do</span>
+<span class="fc" data-hits="25">        parser.check_token_type(token_type.SEMICOLON)</span>
+<span class="fc" data-hits="28">        if parser.current_token.type== token_type.END then</span>
+<span class="fc" data-hits="3">            break</span>
+        end
+<span class="fc" data-hits="9">        table.insert(statements,parser.statement())</span>
+        
+    end
+<span class="fc" data-hits="48">    return statements</span>
+end
+
+
+<span class="fc" data-hits="3">function parser.complex_statement()</span>
+<span class="fc" data-hits="50">    parser.check_token_type(token_type.BEGIN)</span>
+<span class="fc" data-hits="51">    local statement_list = parser.statement_list()</span>
+<span class="fc" data-hits="64">    parser.check_token_type(token_type.END)</span>
+<span class="fc" data-hits="61">    return CompoundNode(statement_list)</span>
+    
+end
+
+<span class="fc" data-hits="4">function parser.program()</span>
+<span class="fc" data-hits="47">    local stmt = parser.complex_statement()</span>
+<span class="fc" data-hits="43">    parser.check_token_type(token_type.DOT)</span>
+<span class="fc" data-hits="51">    return ProgramNode(stmt)</span>
+end
+
+
+<span class="fc" data-hits="3">return parser</span>
 </pre>
       </div>
 
@@ -499,27 +681,27 @@ end
                <span class="miss"><strong>0</strong> Missed</span>
             </span>
          </h2>
-         <pre class="prettyprint lang-lua linenums"><span class="fc" data-hits="3">local token_type = {}</span>
+         <pre class="prettyprint lang-lua linenums"><span class="fc" data-hits="12">local token_type = {}</span>
 
-<span class="fc" data-hits="3">token_type.IDENTIFIER = &quot;IDENTIFIER&quot;</span>
-<span class="fc" data-hits="3">token_type.OPERATOR = &quot;OPERATOR&quot;</span>
-<span class="fc" data-hits="3">token_type.ASSIGN = &quot;ASSIGN&quot;</span>
-<span class="fc" data-hits="3">token_type.DOT = &quot;DOT&quot;</span>
-<span class="fc" data-hits="3">token_type.BEGIN = &quot;BEGIN&quot;</span>
-<span class="fc" data-hits="3">token_type.END = &quot;END&quot;</span>
-<span class="fc" data-hits="3">token_type.SEMICOLON = &quot;SEMICOLON&quot;</span>
-<span class="fc" data-hits="3">token_type.LPAREN = &quot;LPAREN&quot;</span>
-<span class="fc" data-hits="3">token_type.RPAREN = &quot;RPAREN&quot;</span>
-<span class="fc" data-hits="3">token_type.NUMBER = &quot;NUMBER&quot;</span>
-<span class="fc" data-hits="3">token_type.EOF = &quot;EOF&quot;</span>
+<span class="fc" data-hits="12">token_type.IDENTIFIER = &quot;IDENTIFIER&quot;</span>
+<span class="fc" data-hits="12">token_type.OPERATOR = &quot;OPERATOR&quot;</span>
+<span class="fc" data-hits="12">token_type.ASSIGN = &quot;ASSIGN&quot;</span>
+<span class="fc" data-hits="12">token_type.DOT = &quot;DOT&quot;</span>
+<span class="fc" data-hits="12">token_type.BEGIN = &quot;BEGIN&quot;</span>
+<span class="fc" data-hits="12">token_type.END = &quot;END&quot;</span>
+<span class="fc" data-hits="12">token_type.SEMICOLON = &quot;SEMICOLON&quot;</span>
+<span class="fc" data-hits="12">token_type.LPAREN = &quot;LPAREN&quot;</span>
+<span class="fc" data-hits="12">token_type.RPAREN = &quot;RPAREN&quot;</span>
+<span class="fc" data-hits="12">token_type.NUMBER = &quot;NUMBER&quot;</span>
+<span class="fc" data-hits="12">token_type.EOF = &quot;EOF&quot;</span>
 
-<span class="fc" data-hits="3">return token_type</span>
+<span class="fc" data-hits="12">return token_type</span>
 </pre>
       </div>
 
    </main>
    <footer>
-        Code coverage generated by <a href="https://lunarmodules.github.io/luacov/" target="_blank">LuaCov</a> at 2025-12-14 22:07:00
+        Code coverage generated by <a href="https://lunarmodules.github.io/luacov/" target="_blank">LuaCov</a> at 2025-12-17 00:59:51
    </footer>
 
    <script type="text/javascript">

@@ -12,181 +12,160 @@ local function VariableNode(name) return { tag = "variable", name = name } end
 local function AssignmentNode(var, expr) return { tag = "assign", var = var, expr = expr } end
 local function CompoundNode(statements) return { tag = "compound", statements = statements } end
 local function EmptyNode() return { tag = "empty" } end
-local function ProgramNode(stmt) return { tag = "program", statement = stmt } end
+local function ProgramNode(stmt) return { tag = "program", programm = stmt } end
 
 
 
 
 -- === Parser ===
 local parser = {}
--- Внутреннее состояние парсера
-local current_token
-local lexer_instance
 
-function parser:new(lexer_instance)
-    local obj = {
-        lexer = lexer_instance,
-        current_token = lexer_instance.next_token()
-    }
-    setmetatable(obj, parser)
-    return obj
+
+function parser.parse()
+    if not parser.lexer then
+        error("parser.parse(): lexer not set. Call parser.set_lexer() first.")
+    end
+    return parser.program()
 end
 
-local function eat(expected_type)
-    if current_token.type == expected_type then
-        current_token = lexer_instance.next_token()
-    else
-        error(string.format(
-            "Syntax error at line %d: expected %s, got %s ('%s')",
-            current_token.line,
-            expected_type,
-            current_token.type,
-            tostring(current_token.token)
-        ))
+
+
+function  parser.set_lexer(lex)
+    if type(lex) == "table" and type(lex.next_token) == "function" then
+        parser.lexer = lex
+        parser.current_token = parser.lexer.next_token()
     end
 end
 
--- factor : ( '+' | '-' ) factor
---        | INTEGER
---        | LPAREN expr RPAREN
---        | variable
-local function factor()
-    local token = current_token
 
-    if token.type == token_type.OPERATOR then
-        if token.token == '+' then
-            eat(token_type.OPERATOR)
-            local f = factor()
-            return BinOpNode(NumberNode(0), '+', f)
-        elseif token.token == '-' then
-            eat(token_type.OPERATOR)
-            local f = factor()
-            return BinOpNode(NumberNode(0), '-', f)
-        else
-            error("Unexpected operator in factor at line " .. token.line)
+
+function parser.check_token_type(tk_type)
+    if tk_type == parser.current_token.type then
+        parser.current_token = parser.lexer.next_token()
+    else
+        return error("Invalid syntax at line " .. parser.current_token.line .. " token: " .. parser.current_token.token)
+    end
+end
+
+
+function parser.term()
+    local node = parser.factor()
+
+    while parser.current_token.type == token_type.OPERATOR and
+          (parser.current_token.token == '*' or parser.current_token.token == '/') do
+        local op = parser.current_token
+        parser.check_token_type(token_type.OPERATOR)
+        local right = parser.factor()
+        node = BinOpNode(node, op, right)
+    end
+
+    return node
+end
+
+
+function parser.expr()
+    local node = parser.term()
+    while parser.current_token.type == token_type.OPERATOR and
+          (parser.current_token.token == '+' or parser.current_token.token == '-') do
+            local op = parser.current_token
+            parser.check_token_type(token_type.OPERATOR)
+            local right = parser.term()
+            node = BinOpNode(node, op, right)
+    end 
+    return node 
+end
+
+function parser.factor()
+    local token = parser.current_token
+
+    if token.type == token_type.NUMBER then
+        parser.check_token_type(token_type.NUMBER)
+        return NumberNode(token)
+    elseif token.type == token_type.LPAREN then
+        parser.check_token_type(token_type.LPAREN)
+        local res = parser.expr()
+        parser.check_token_type(token_type.RPAREN)
+        return res
+    elseif token.type == token_type.IDENTIFIER then
+        parser.check_token_type(token_type.IDENTIFIER)
+        return VariableNode(token)
+    elseif  token.type == token_type.OPERATOR then
+        if token.token == "+" then
+            local op = token
+            parser.check_token_type(token_type.OPERATOR)
+            local f = parser.factor()
+            return BinOpNode(NumberNode({token = 0, type = token_type.NUMBER}),op,f)
+        elseif token.token == "-" then
+            local op = token
+            parser.check_token_type(token_type.OPERATOR)
+            local f = parser.factor()
+            return BinOpNode(NumberNode({token = 0, type = token_type.NUMBER}),op,f)
         end
 
-    elseif token.type == token_type.NUMBER then
-        eat(token_type.NUMBER)
-        return NumberNode(token.token)
-
-    elseif token.type == token_type.LPAREN then
-        eat(token_type.LPAREN)
-        local expr_node = expr()
-        eat(token_type.RPAREN)
-        return expr_node
-
-    elseif token.type == token_type.IDENTIFIER then
-        local var = VariableNode(token.token)
-        eat(token_type.IDENTIFIER)
-        return var
-
-    else
-        error("Invalid syntax in factor at line " .. token.line)
     end
+    return error("Invalid factor at line " .. parser.current_token.line .. " token: " .. parser.current_token.token)
+    
 end
 
--- term : factor (( '*' | '/' ) factor)*
-local function term()
-    local node = factor()
 
-    while current_token.type == token_type.OPERATOR and
-          (current_token.token == '*' or current_token.token == '/') do
-        local op = current_token.token
-        eat(token_type.OPERATOR)
-        local right = factor()
-        node = BinOpNode(node, op, right)
-    end
 
-    return node
+
+function parser.assigment()
+    local var_name = parser.current_token
+    local var_node = VariableNode(var_name)
+    parser.check_token_type(token_type.IDENTIFIER)
+    parser.check_token_type(token_type.ASSIGN)
+    local var_expr = parser.expr()
+    return AssignmentNode(var_node, var_expr)
 end
 
--- expr : term (( '+' | '-' ) term)*
-local function expr()
-    local node = term()
 
-    while current_token.type == token_type.OPERATOR and
-          (current_token.token == '+' or current_token.token == '-') do
-        local op = current_token.token
-        eat(token_type.OPERATOR)
-        local right = term()
-        node = BinOpNode(node, op, right)
-    end
 
-    return node
-end
-
--- assignment : variable ASSIGN expr
-local function assignment()
-    local var_token = current_token
-    local var_node = VariableNode(var_token.token)
-    eat(token_type.IDENTIFIER)
-    eat(token_type.ASSIGN)
-    local expr_node = expr()
-    return AssignmentNode(var_node, expr_node)
-end
-
--- empty
-local function empty()
+function parser.empty()
     return EmptyNode()
 end
 
--- statement : compound_statement | assignment | empty
-local function statement()
-    if current_token.type == token_type.BEGIN then
-        return compound_statement()
-    elseif current_token.type == token_type.IDENTIFIER then
-        return assignment()
-    else
-        return empty()
+
+
+
+function parser.statement()
+    if parser.current_token.type == token_type.BEGIN then
+        return parser.complex_statement()
+    elseif parser.current_token.type == token_type.IDENTIFIER then 
+        return parser.assigment()
+    else 
+        return parser.empty()
     end
+    
 end
 
--- statement_list : statement | statement SEMI statement_list
-local function statement_list()
-    local statements = { statement() }
-
-    while current_token.type == token_type.SEMICOLON do
-        eat(token_type.SEMICOLON)
-        if current_token.type == token_type.END then
+function parser.statement_list()
+    local statements = { parser.statement()}
+    while parser.current_token.type == token_type.SEMICOLON do
+        parser.check_token_type(token_type.SEMICOLON)
+        if parser.current_token.type== token_type.END then
             break
         end
-        table.insert(statements, statement())
+        table.insert(statements,parser.statement())
+        
     end
-
     return statements
 end
 
--- compound_statement : BEGIN statement_list END
-local function compound_statement()
-    eat(token_type.BEGIN)
-    local stmts = statement_list()
-    eat(token_type.END)
-    return CompoundNode(stmts)
+
+function parser.complex_statement()
+    parser.check_token_type(token_type.BEGIN)
+    local statement_list = parser.statement_list()
+    parser.check_token_type(token_type.END)
+    return CompoundNode(statement_list)
+    
 end
 
--- program : complex_statement DOT   (complex_statement = compound_statement)
-local function program()
-    local comp = compound_statement()
-    eat(token_type.DOT)
-    return ProgramNode(comp)
+function parser.program()
+    local stmt = parser.complex_statement()
+    parser.check_token_type(token_type.DOT)
+    return ProgramNode(stmt)
 end
 
--- === Публичный API ===
-
-function parser.set_lexer(lex)
-    if type(lex) ~= "table" or type(lex.next_token) ~= "function" then
-        error("parser.set_lexer(): expected a lexer instance")
-    end
-    lexer_instance = lex
-    current_token = lexer_instance.next_token()
-end
-
-function parser.parse()
-    if not lexer_instance then
-        error("parser.parse(): lexer not set. Call parser.set_lexer() first.")
-    end
-    return program()
-end
 
 return parser
