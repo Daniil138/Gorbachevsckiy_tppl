@@ -33,7 +33,7 @@ end
 function  parser.set_lexer(lex)
     if type(lex) == "table" and type(lex.next_token) == "function" then
         parser.lexer = lex
-        parser.current_token = parser.lexer.next_token()
+        
     end
 end
 
@@ -162,6 +162,7 @@ function parser.complex_statement()
 end
 
 function parser.program()
+    parser.current_token = parser.lexer.next_token()
     local stmt = parser.complex_statement()
     parser.check_token_type(token_type.DOT)
     return ProgramNode(stmt)
