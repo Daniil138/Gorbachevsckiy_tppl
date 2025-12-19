@@ -43,7 +43,7 @@ function parser.check_token_type(tk_type)
     if tk_type == parser.current_token.type then
         parser.current_token = parser.lexer.next_token()
     else
-        return error("Invalid syntax at line " .. parser.current_token.line .. " token: " .. parser.current_token.token)
+        return error("Invalid syntax at line " .. parser.current_token.line .. " token: " .. parser.current_token.token .. " but token should be type " .. tk_type)
     end
 end
 

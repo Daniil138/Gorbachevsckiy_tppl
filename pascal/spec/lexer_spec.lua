@@ -96,6 +96,15 @@ describe("Pascal Lexer", function()
         expect_token(tokens[1], token_type.BEGIN, "begin")
         expect_token(tokens[2], token_type.END, "END")
     end)
+    
+    it("should recognize keywords case-insensitively", function()
+        local tokens = tokenize("BEGIN BEGIN END END")
+        assert(#tokens == 4)
+        expect_token(tokens[1], token_type.BEGIN, "BEGIN")
+        expect_token(tokens[2], token_type.BEGIN, "BEGIN")
+        expect_token(tokens[3], token_type.END, "END")
+        expect_token(tokens[4], token_type.END, "END")
+    end)
 
 
 

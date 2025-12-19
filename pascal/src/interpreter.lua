@@ -24,6 +24,10 @@ function interpreter.visit(node)
 
     elseif node.tag == "binop" then
         return interpreter.visit_binop(node)
+    elseif node.tag == "compound" then
+        for _,node in pairs(node.statements) do
+            interpreter.visit(node)
+        end
     elseif node.tag == "empty" then
         return
     end
